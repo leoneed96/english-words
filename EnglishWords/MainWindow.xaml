@@ -1,0 +1,136 @@
+﻿<Window x:Class="EnglishWords.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:telerik="http://schemas.telerik.com/2008/xaml/presentation"
+        xmlns:local="clr-namespace:EnglishWords"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="450" Width="800">
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"></BooleanToVisibilityConverter>
+        <telerik:InvertedBooleanToVisibilityConverter x:Key="InvertedBooleanToVisibilityConverter"></telerik:InvertedBooleanToVisibilityConverter>
+        <Style x:Key="SettingLabelStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="Margin" Value="20 10"/>
+            <Setter Property="FontFamily" Value="Geogria"/>
+        </Style>
+        <Style x:Key="SettingValueStyle" TargetType="TextBox">
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="Margin" Value="20 10"/>
+            <Setter Property="FontFamily" Value="Geogria"/>
+        </Style>
+    </Window.Resources>
+    <Grid>
+        <telerik:RadTabControl>
+            <telerik:RadTabItem Header="App settings">
+                <StackPanel>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="0.4*"/>
+                            <ColumnDefinition Width="0.6*"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Style="{StaticResource SettingLabelStyle}">Show interval</TextBlock>
+                        <TextBox Grid.Column="1"
+                                 TextAlignment="Center"
+                                 Style="{StaticResource SettingValueStyle}" Text="{Binding SettingsViewModel.ShowInterval, Mode=TwoWay}"/>
+                    </Grid>
+
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="0.4*"/>
+                            <ColumnDefinition Width="0.6*"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Style="{StaticResource SettingLabelStyle}">Hide interval</TextBlock>
+                        <TextBox Grid.Column="1"
+                                 TextAlignment="Center"
+                                 Style="{StaticResource SettingValueStyle}" Text="{Binding SettingsViewModel.HideInterval, Mode=TwoWay}"/>
+                    </Grid>
+
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="0.4*"/>
+                            <ColumnDefinition Width="0.6*"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Style="{StaticResource SettingLabelStyle}">Auto hide</TextBlock>
+                        <CheckBox Grid.Column="1"
+                                  HorizontalAlignment="Center"
+                                  VerticalAlignment="Center"
+                                  IsChecked="{Binding SettingsViewModel.AutoHide, Mode=TwoWay}"
+                                  />
+                    </Grid>
+                    
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="0.4*"/>
+                            <ColumnDefinition Width="0.6*"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Style="{StaticResource SettingLabelStyle}" TextWrapping="Wrap">
+                            Show order (0 - add date ascending; 1 - add date descending; 2 - random)
+                        </TextBlock>
+                        <telerik:RadNumericUpDown Grid.Column="1" Minimum="0" Maximum="2"
+                                                  HorizontalContentAlignment="Center"
+                                                  Value="{Binding SettingsViewModel.Order, Mode=TwoWay}"
+                                                  >
+                        </telerik:RadNumericUpDown>
+                    </Grid>
+
+                    <telerik:RadButton Command="{Binding StartShowCommand}" Height="35" Margin="0 20" Width="100">Start</telerik:RadButton>
+                </StackPanel>
+            </telerik:RadTabItem>
+            <telerik:RadTabItem Header="Manage words">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="50px"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <StackPanel Orientation="Horizontal">
+                        <telerik:RadButton Height="35" DockPanel.Dock="Left" 
+                                           Margin="5 0"
+                                           CornerRadius="5"
+                                           telerik:StyleManager.Theme="Windows8"
+                                           Command="{Binding WordsViewModel.AddWordCommand}"
+                                           CommandParameter="{Binding ElementName=gridView}"
+                                           >Add</telerik:RadButton>
+                        <telerik:RadButton Height="35" DockPanel.Dock="Left" telerik:StyleManager.Theme="Windows8"
+                                           Command="{Binding WordsViewModel.CommitUpdateCommand}"
+                                           CornerRadius="5"
+                                           Margin="5 0"
+                                           >Commit Updates</telerik:RadButton>
+                        <telerik:RadButton Height="35" DockPanel.Dock="Left" 
+                                           Command="{Binding WordsViewModel.DeleteWordCommand}"
+                                           CommandParameter="{Binding ElementName=gridView}"
+                                           CornerRadius="5"
+                                           Margin="5 0"
+                                           telerik:StyleManager.Theme="Windows8">Delete</telerik:RadButton>
+                    </StackPanel>
+                    <TextBlock FontSize="18" FontFamily="Georgia"
+                               Grid.Row="1"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"
+                               Visibility="{Binding WordsViewModel.IsBusy, Converter={StaticResource BooleanToVisibilityConverter}}"
+                               >
+                        Processing, please wait... 
+                    </TextBlock>
+                    <telerik:RadGridView 
+                        x:Name="gridView"
+                        Visibility="{Binding IsBusy, Converter={StaticResource InvertedBooleanToVisibilityConverter}}"
+                        Grid.Row="1"
+                        IsBusy="{Binding IsBusy}"
+                        ShowGroupPanel="False" 
+                        ColumnWidth="Auto"
+                        DataContext="{Binding WordsViewModel}" ItemsSource="{Binding Words}">
+                        <telerik:EventToCommandBehavior.EventBindings>
+                            <telerik:EventBinding Command="{Binding RowChangedCommand}" 
+                                                  PassEventArgsToCommand="True"  EventName="AddingNewDataItem"/>
+                            <telerik:EventBinding Command="{Binding RowChangedCommand}" 
+                                                  PassEventArgsToCommand="True" EventName="RowEditEnded"/>
+                            <telerik:EventBinding Command="{Binding ValidateCommand}" 
+                                                  PassEventArgsToCommand="True" EventName="RowValidating"/>
+                        </telerik:EventToCommandBehavior.EventBindings>
+                    </telerik:RadGridView>
+                </Grid>
+            </telerik:RadTabItem>
+        </telerik:RadTabControl>
+    </Grid>
+</Window>
